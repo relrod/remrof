@@ -39,7 +39,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_systems(Startup, setup)
-        .add_systems(Update, (animate_character, move_character, apply_velocity))
+        .add_systems(Update, (animate_character, move_character, apply_velocity, apply_gravity, jump))
         .run();
 }
 
@@ -136,6 +136,24 @@ fn apply_velocity(mut query: Query<(&Velocity, &mut Transform)>, time: Res<Time>
     for (velocity, mut transform) in &mut query {
         transform.translation.x += velocity.x * time.delta_secs();
         transform.translation.y += velocity.y * time.delta_secs();
+    }
+}
+
+fn apply_gravity(mut query: Query<&mut Velocity>, time: Res<Time>) {
+    let gravity_factor = 300.0;
+
+    for mut velocity in &mut query {
+        velocity.y -= gravity_factor * time.delta_secs();
+    }
+}
+
+fn jump(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut query: Query<&mut Velocity, With<Character>>,
+) {
+    let mut velocity = query.single_mut();
+    if keyboard_input.just_pressed(KeyCode::Space) {
+        velocity.y = 400.0;
     }
 }
 
