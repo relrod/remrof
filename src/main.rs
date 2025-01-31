@@ -2,6 +2,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 
 #[derive(Component)]
 struct AnimationIndices {
@@ -39,7 +40,16 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_systems(Startup, setup)
-        .add_systems(Update, (animate_character, move_character, apply_velocity, apply_gravity, jump))
+        .add_systems(
+            Update,
+            (
+                animate_character,
+                move_character,
+                apply_velocity,
+                apply_gravity,
+                jump,
+            ),
+        )
         .run();
 }
 
@@ -161,6 +171,7 @@ fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    query: Query<&Window, With<PrimaryWindow>>,
 ) {
     // Idle texture and atlas
     let character_idle = asset_server.load("textures/idle.png");
@@ -174,6 +185,22 @@ fn setup(
 
     // Camera
     commands.spawn(Camera2d);
+
+    // Background
+    let window = query.single();
+    commands.spawn((
+        Sprite {
+            image: asset_server.load("bg/green.png"),
+            image_mode: SpriteImageMode::Tiled {
+                tile_x: true,
+                tile_y: true,
+                stretch_value: 1.0,
+            },
+            custom_size: Some(window.size()),
+            ..default()
+        },
+        Transform::from_translation(Vec3::new(0.0, 0.0, -1.0)),
+    ));
 
     commands.insert_resource(CharacterAnimations {
         idle_texture: character_idle.clone(),
