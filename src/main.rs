@@ -26,11 +26,17 @@ enum CharacterState {
     Running,
 }
 
+#[derive(Component)]
+struct Velocity {
+    x: f32,
+    y: f32,
+}
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_systems(Startup, setup)
-        .add_systems(Update, (animate_character, move_character))
+        .add_systems(Update, (animate_character, move_character, apply_velocity))
         .run();
 }
 
@@ -79,22 +85,49 @@ fn animate_character(
 
 fn move_character(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut Transform, &mut CharacterState, &mut Sprite), With<Character>>,
+    mut query: Query<(&mut Velocity, &mut CharacterState, &mut Sprite), With<Character>>,
     time: Res<Time>
 ) {
-    let speed = 200.0;
-    let (mut transform, mut state, mut sprite) = query.single_mut();
+    let running_speed = 300.0;
+    let acceleration = 20.0;
 
-    if keyboard_input.pressed(KeyCode::ArrowLeft) {
-        transform.translation.x -= speed * time.delta_secs();
-        *state = CharacterState::Running;
-        sprite.flip_x = true;
-    } else if keyboard_input.pressed(KeyCode::ArrowRight) {
-        transform.translation.x += speed * time.delta_secs();
-        *state = CharacterState::Running;
-        sprite.flip_x = false;
+    let (mut velocity, mut state, mut sprite) = query.single_mut();
+    let move_left = keyboard_input.pressed(KeyCode::ArrowLeft);
+    let move_right = keyboard_input.pressed(KeyCode::ArrowRight);
+
+    let target_speed = if move_left {
+        -running_speed
+    } else if move_right {
+        running_speed
     } else {
-        *state = CharacterState::Idle;
+        0.0
+    };
+
+    if velocity.x < target_speed {
+        velocity.x += acceleration;
+    } else if velocity.x > target_speed {
+        velocity.x -= acceleration;
+    }
+
+    if move_left {
+        sprite.flip_x = true;
+    } else if move_right {
+        sprite.flip_x = false;
+    }
+
+    *state = if move_left || move_right {
+        CharacterState::Running
+    } else {
+        CharacterState::Idle
+    };
+}
+
+fn apply_velocity(
+    mut query: Query<(&Velocity, &mut Transform)>,
+    time: Res<Time>,
+) {
+    for (velocity, mut transform) in &mut query {
+        transform.translation.x += velocity.x * time.delta_secs();
     }
 }
 
@@ -152,6 +185,7 @@ fn setup(
         AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
         Character,
         CharacterState::Idle,
+        Velocity { x: 0.0, y: 0.0 },
     ));
 
 
