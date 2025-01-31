@@ -1,3 +1,6 @@
+#![warn(clippy::pedantic)]
+#![allow(clippy::needless_pass_by_value)]
+
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -52,14 +55,22 @@ fn animate_character(
 ) {
     for (state, indices, mut timer, mut sprite) in &mut query {
         let (texture, layout, current_indices) = match state {
-            CharacterState::Idle => (&animations.idle_texture, &animations.idle_layout, indices.idle),
-            CharacterState::Running => (&animations.run_texture, &animations.run_layout, indices.run),
+            CharacterState::Idle => (
+                &animations.idle_texture,
+                &animations.idle_layout,
+                indices.idle,
+            ),
+            CharacterState::Running => {
+                (&animations.run_texture, &animations.run_layout, indices.run)
+            }
         };
 
         // If we go from running to idle or vice verse, swap the texture and layout.
-        let must_switch =
-            sprite.image != *texture ||
-            sprite.texture_atlas.as_ref().map(|atlas| atlas.layout != *layout).unwrap_or(true);
+        let must_switch = sprite.image != *texture
+            || sprite
+                .texture_atlas
+                .as_ref()
+                .map_or(true, |atlas| atlas.layout != *layout);
 
         if must_switch {
             sprite.image = texture.clone();
@@ -86,7 +97,6 @@ fn animate_character(
 fn move_character(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut query: Query<(&mut Velocity, &mut CharacterState, &mut Sprite), With<Character>>,
-    time: Res<Time>
 ) {
     let running_speed = 300.0;
     let acceleration = 20.0;
@@ -122,12 +132,10 @@ fn move_character(
     };
 }
 
-fn apply_velocity(
-    mut query: Query<(&Velocity, &mut Transform)>,
-    time: Res<Time>,
-) {
+fn apply_velocity(mut query: Query<(&Velocity, &mut Transform)>, time: Res<Time>) {
     for (velocity, mut transform) in &mut query {
         transform.translation.x += velocity.x * time.delta_secs();
+        transform.translation.y += velocity.y * time.delta_secs();
     }
 }
 
@@ -138,24 +146,12 @@ fn setup(
 ) {
     // Idle texture and atlas
     let character_idle = asset_server.load("textures/idle.png");
-    let character_idle_layout = TextureAtlasLayout::from_grid(
-        UVec2::splat(32),
-        11,
-        1,
-        None,
-        None,
-    );
+    let character_idle_layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 11, 1, None, None);
     let character_idle_handle = texture_atlas_layouts.add(character_idle_layout);
 
     // Run texture and atlas
     let character_run = asset_server.load("textures/run.png");
-    let character_run_layout = TextureAtlasLayout::from_grid(
-        UVec2::splat(32),
-        12,
-        1,
-        None,
-        None,
-    );
+    let character_run_layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 12, 1, None, None);
     let character_run_handle = texture_atlas_layouts.add(character_run_layout);
 
     // Camera
@@ -174,8 +170,8 @@ fn setup(
             character_idle,
             TextureAtlas {
                 layout: character_idle_handle,
-                index: 0
-            }
+                index: 0,
+            },
         ),
         Transform::from_scale(Vec3::splat(1.5)),
         AnimationIndices {
@@ -187,6 +183,4 @@ fn setup(
         CharacterState::Idle,
         Velocity { x: 0.0, y: 0.0 },
     ));
-
-
 }
