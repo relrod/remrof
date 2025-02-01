@@ -1,8 +1,10 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::needless_pass_by_value)]
 
-use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
+mod embedded_assets;
+
+use crate::embedded_assets::EmbeddedAssetPlugin;
+use bevy::{prelude::*, window::PrimaryWindow};
 
 #[derive(Component)]
 struct AnimationIndices {
@@ -38,7 +40,10 @@ struct Velocity {
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugins((
+            DefaultPlugins.set(ImagePlugin::default_nearest()),
+            EmbeddedAssetPlugin,
+        ))
         .add_systems(Startup, setup)
         .add_systems(
             Update,
@@ -174,12 +179,12 @@ fn setup(
     query: Query<&Window, With<PrimaryWindow>>,
 ) {
     // Idle texture and atlas
-    let character_idle = asset_server.load("textures/idle.png");
+    let character_idle = asset_server.load("embedded://remrof/../assets/textures/idle.png");
     let character_idle_layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 11, 1, None, None);
     let character_idle_handle = texture_atlas_layouts.add(character_idle_layout);
 
     // Run texture and atlas
-    let character_run = asset_server.load("textures/run.png");
+    let character_run = asset_server.load("embedded://remrof/../assets/textures/run.png");
     let character_run_layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 12, 1, None, None);
     let character_run_handle = texture_atlas_layouts.add(character_run_layout);
 
@@ -190,7 +195,7 @@ fn setup(
     let window = query.single();
     commands.spawn((
         Sprite {
-            image: asset_server.load("bg/green.png"),
+            image: asset_server.load("embedded://remrof/../assets/bg/green.png"),
             image_mode: SpriteImageMode::Tiled {
                 tile_x: true,
                 tile_y: true,
