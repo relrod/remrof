@@ -21,9 +21,14 @@ fn main() {
             (
                 character::animate_character,
                 character::move_character,
+                character::jump,
+            ),
+        )
+        .add_systems(
+            FixedUpdate,
+            (
                 physics::apply_velocity,
                 physics::apply_gravity,
-                character::jump,
             ),
         )
         .run();
