@@ -40,6 +40,8 @@ jobs:
 
       - name: Enable rust-cache
         uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.name }}
 
       - name: Run ${{ matrix.name }}
         run: ${{ matrix.cmd }}
