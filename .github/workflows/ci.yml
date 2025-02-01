@@ -1,0 +1,31 @@
+---
+name: CI
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        include:
+          - cmd: cargo fmt --check
+            name: rustfmt
+          - cmd: cargo clippy
+            name: clippy
+          - cmd: cargo build --release
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install toolchain
+        run: rustup toolchain install stable
+
+      - name: Install build deps
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev
+
+      - name: Run ${{ matrix.name }}
+        run: ${{ matrix.cmd }}
