@@ -1,42 +1,17 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::needless_pass_by_value)]
 
+mod animation;
+mod character;
 mod embedded_assets;
+mod physics;
 
-use crate::embedded_assets::EmbeddedAssetPlugin;
+use crate::{
+    animation::AnimationIndices, animation::AnimationTimer, character::Character,
+    character::CharacterAnimations, character::CharacterState,
+    embedded_assets::EmbeddedAssetPlugin, physics::Velocity,
+};
 use bevy::{prelude::*, window::PrimaryWindow};
-
-#[derive(Component)]
-struct AnimationIndices {
-    idle: (usize, usize),
-    run: (usize, usize),
-}
-
-#[derive(Component, Deref, DerefMut)]
-struct AnimationTimer(Timer);
-
-#[derive(Component)]
-struct Character;
-
-#[derive(Resource)]
-struct CharacterAnimations {
-    idle_texture: Handle<Image>,
-    idle_layout: Handle<TextureAtlasLayout>,
-    run_texture: Handle<Image>,
-    run_layout: Handle<TextureAtlasLayout>,
-}
-
-#[derive(Component, PartialEq)]
-enum CharacterState {
-    Idle,
-    Running,
-}
-
-#[derive(Component)]
-struct Velocity {
-    x: f32,
-    y: f32,
-}
 
 fn main() {
     App::new()
@@ -44,7 +19,7 @@ fn main() {
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             EmbeddedAssetPlugin,
         ))
-        .add_systems(Startup, setup)
+        .add_systems(Startup, (setup, character::setup))
         .add_systems(
             Update,
             (
@@ -175,19 +150,8 @@ fn jump(
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     query: Query<&Window, With<PrimaryWindow>>,
 ) {
-    // Idle texture and atlas
-    let character_idle = asset_server.load("embedded://remrof/../assets/textures/idle.png");
-    let character_idle_layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 11, 1, None, None);
-    let character_idle_handle = texture_atlas_layouts.add(character_idle_layout);
-
-    // Run texture and atlas
-    let character_run = asset_server.load("embedded://remrof/../assets/textures/run.png");
-    let character_run_layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 12, 1, None, None);
-    let character_run_handle = texture_atlas_layouts.add(character_run_layout);
-
     // Camera
     commands.spawn(Camera2d);
 
@@ -205,32 +169,5 @@ fn setup(
             ..default()
         },
         Transform::from_translation(Vec3::new(0.0, 0.0, -1.0)),
-    ));
-
-    commands.insert_resource(CharacterAnimations {
-        idle_texture: character_idle.clone(),
-        idle_layout: character_idle_handle.clone(),
-        run_texture: character_run.clone(),
-        run_layout: character_run_handle,
-    });
-
-    // Our lil' character
-    commands.spawn((
-        Sprite::from_atlas_image(
-            character_idle,
-            TextureAtlas {
-                layout: character_idle_handle,
-                index: 0,
-            },
-        ),
-        Transform::from_scale(Vec3::splat(1.5)),
-        AnimationIndices {
-            idle: (0, 10),
-            run: (0, 11),
-        },
-        AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
-        Character,
-        CharacterState::Idle,
-        Velocity { x: 0.0, y: 0.0 },
     ));
 }
