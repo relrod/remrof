@@ -203,6 +203,6 @@ pub fn jump(
 ) {
     let mut velocity = query.single_mut();
     if keyboard_input.just_pressed(KeyCode::Space) {
-        velocity.y = 220.0;
+        velocity.y = 300.0;
     }
 }
