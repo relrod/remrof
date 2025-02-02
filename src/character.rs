@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{animation::AnimationIndices, animation::AnimationTimer, physics::Velocity};
+use crate::{
+    animation::{AnimationIndices, AnimationTimer},
+    physics::{Collider, Grounded, Velocity},
+};
 
 #[derive(Component)]
 pub struct Character;
@@ -63,6 +66,11 @@ pub fn setup(
         Character,
         CharacterState::Idle,
         Velocity { x: 0.0, y: 0.0 },
+        Grounded,
+        Collider {
+            size: Vec2::new(32.0 * 1.5, 32.0 * 1.5),
+            offset: Vec2::new(0.0, -5.0),
+        },
     ));
 }
 
@@ -161,6 +169,6 @@ pub fn jump(
 ) {
     let mut velocity = query.single_mut();
     if keyboard_input.just_pressed(KeyCode::Space) {
-        velocity.y = 400.0;
+        velocity.y = 200.0;
     }
 }

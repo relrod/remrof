@@ -4,7 +4,9 @@
 mod animation;
 mod character;
 mod embedded_assets;
+mod level1;
 mod physics;
+mod platform;
 
 use crate::embedded_assets::EmbeddedAssetPlugin;
 use bevy::{prelude::*, window::PrimaryWindow};
@@ -15,13 +17,14 @@ fn main() {
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             EmbeddedAssetPlugin,
         ))
-        .add_systems(Startup, (setup, character::setup))
+        .add_systems(Startup, (setup, character::setup, level1::setup))
         .add_systems(
             Update,
             (
                 character::animate_character,
                 character::move_character,
                 character::jump,
+                // draw_aabb_boxes,
             ),
         )
         .add_systems(
@@ -29,6 +32,7 @@ fn main() {
             (
                 physics::apply_velocity,
                 physics::apply_gravity,
+                physics::check_for_collisions,
             ),
         )
         .run();
@@ -57,4 +61,31 @@ fn setup(
         },
         Transform::from_translation(Vec3::new(0.0, 0.0, -1.0)),
     ));
+}
+
+use crate::physics::{Collider, Grounded};
+pub fn draw_aabb_boxes(
+    mut gizmos: Gizmos,
+    grounded: Query<(&mut Transform, &Collider), With<Grounded>>,
+    colliders: Query<(&Transform, &Collider), (With<Collider>, Without<Grounded>)>,
+) {
+    for (collider_transform, collider_collider) in &colliders {
+        let collider_center = collider_transform.translation.truncate() + collider_collider.offset;
+        let collider_half_size = collider_collider.size;
+        gizmos.rect_2d(
+            collider_center,
+            collider_half_size,
+            Color::srgb(1.0, 0.0, 0.0),
+        );
+    }
+
+    for (grounded_transform, grounded_collider) in &grounded {
+        let grounded_center = grounded_transform.translation.truncate() + grounded_collider.offset;
+        let grounded_half_size = grounded_collider.size;
+        gizmos.rect_2d(
+            grounded_center,
+            grounded_half_size,
+            Color::srgb(0.0, 1.0, 0.0),
+        );
+    }
 }
