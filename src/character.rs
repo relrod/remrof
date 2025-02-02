@@ -68,7 +68,7 @@ pub fn setup(
         Velocity { x: 0.0, y: 0.0 },
         Grounded,
         Collider {
-            size: Vec2::new(32.0 * 1.5, 32.0 * 1.5),
+            size: Vec2::new(32.0 * 1.1, 32.0 * 1.5),
             offset: Vec2::new(0.0, -5.0),
         },
     ));
@@ -169,6 +169,6 @@ pub fn jump(
 ) {
     let mut velocity = query.single_mut();
     if keyboard_input.just_pressed(KeyCode::Space) {
-        velocity.y = 200.0;
+        velocity.y = 220.0;
     }
 }
