@@ -50,7 +50,11 @@ pub fn setup(
                 index: 0,
             },
         ),
-        Transform::from_scale(Vec3::splat(1.5)),
+        Transform {
+            scale: Vec3::splat(1.5),
+            translation: Vec3::new(0.0, 0.0, 100.0),
+            ..default()
+        },
         AnimationIndices {
             idle: (0, 10),
             run: (0, 11),
