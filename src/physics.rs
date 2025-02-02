@@ -8,12 +8,21 @@ pub struct Velocity {
 }
 
 /// A Grounded entity is affected by (i.e. falls onto) platforms/the ground.
+/// It gives a way to differentiate between "dynamic" entities (e.g. the player)
+/// (which would be a "Grounded" entity) and "static" entities (e.g. the ground
+/// or a platform), which would not have this component but would still have a
+/// Collider component.
 #[derive(Component)]
 pub struct Grounded;
 
+/// A Collider component describes the size and offset of an entity's collider.
 #[derive(Component)]
 pub struct Collider {
+    /// The size of the collider, *with* scale applied.
     pub size: Vec2,
+    /// The offset of the collider from the entity's center.
+    /// This can be used to account for e.g. PNGs with transparent space around
+    /// the sprite in some direction.
     pub offset: Vec2,
 }
 
@@ -94,6 +103,8 @@ pub fn check_for_collisions(
     }
 }
 
+/// Given two AABB boxes, determine if they are currently colliding, and if so
+/// in from which direction?
 fn collision_direction(grounded_box: &Aabb2d, collider_box: &Aabb2d) -> Option<Collision> {
     if !grounded_box.intersects(collider_box) {
         return None;
