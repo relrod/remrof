@@ -14,12 +14,14 @@ pub struct CharacterAnimations {
     pub idle_layout: Handle<TextureAtlasLayout>,
     pub run_texture: Handle<Image>,
     pub run_layout: Handle<TextureAtlasLayout>,
+    pub jump_texture: Handle<Image>,
 }
 
 #[derive(Component, PartialEq)]
 pub enum CharacterState {
     Idle,
     Running,
+    Jumping,
 }
 
 pub fn setup(
@@ -37,11 +39,15 @@ pub fn setup(
     let character_run_layout = TextureAtlasLayout::from_grid(UVec2::splat(32), 12, 1, None, None);
     let character_run_handle = texture_atlas_layouts.add(character_run_layout);
 
+    // Jump texture (no atlas, just a single image)
+    let character_jump = asset_server.load("embedded://remrof/../assets/textures/jump.png");
+
     commands.insert_resource(CharacterAnimations {
         idle_texture: character_idle.clone(),
         idle_layout: character_idle_handle.clone(),
         run_texture: character_run.clone(),
         run_layout: character_run_handle,
+        jump_texture: character_jump.clone(),
     });
 
     // Our lil' character
@@ -78,36 +84,62 @@ pub fn animate_character(
     time: Res<Time>,
     animations: Res<CharacterAnimations>,
     mut query: Query<(
-        &CharacterState,
+        &mut CharacterState,
+        &Velocity,
         &AnimationIndices,
         &mut AnimationTimer,
         &mut Sprite,
     )>,
 ) {
-    for (state, indices, mut timer, mut sprite) in &mut query {
-        let (texture, layout, current_indices) = match state {
+    for (mut state, velocity, indices, mut timer, mut sprite) in &mut query {
+        let (texture, layout, current_indices) = match *state {
             CharacterState::Idle => (
                 &animations.idle_texture,
-                &animations.idle_layout,
+                Some(&animations.idle_layout),
                 indices.idle,
             ),
-            CharacterState::Running => {
-                (&animations.run_texture, &animations.run_layout, indices.run)
+            CharacterState::Running => (
+                &animations.run_texture,
+                Some(&animations.run_layout),
+                indices.run,
+            ),
+            CharacterState::Jumping => {
+                // If we're jumping but our y velocity has gone back to 0, we're
+                // not jumping anymore, so reset to something else.
+                if velocity.y == 0.0 {
+                    *state = CharacterState::Idle;
+                    (
+                        &animations.idle_texture,
+                        Some(&animations.idle_layout),
+                        indices.idle,
+                    )
+                } else {
+                    (&animations.jump_texture, None, (0, 0))
+                }
             }
         };
 
-        // If we go from running to idle or vice verse, swap the texture and layout.
-        let must_switch = sprite.image != *texture
-            || sprite
-                .texture_atlas
-                .as_ref()
-                .map_or(true, |atlas| atlas.layout != *layout);
+        let texture_changed = sprite.image != *texture;
+        let atlas_changed = match (&sprite.texture_atlas, layout) {
+            (Some(atlas), Some(layout_handle)) => atlas.layout != *layout_handle,
+            (Some(_), None) => true, // Had an atlas but now using a plain texture
+            (None, Some(_)) => true, // Had no atlas but now using one
+            (None, None) => false,   // No change (both are plain textures)
+        };
+        let must_switch = texture_changed || atlas_changed;
 
         if must_switch {
             sprite.image = texture.clone();
-            if let Some(atlas) = &mut sprite.texture_atlas {
-                atlas.layout = layout.clone();
-                atlas.index = current_indices.0;
+            match layout {
+                Some(layout) => {
+                    sprite.texture_atlas = Some(TextureAtlas {
+                        layout: layout.clone(),
+                        index: current_indices.0,
+                    });
+                }
+                None => {
+                    sprite.texture_atlas = None;
+                }
             }
         }
 
@@ -156,7 +188,9 @@ pub fn move_character(
         sprite.flip_x = false;
     }
 
-    *state = if move_left || move_right {
+    *state = if velocity.y != 0.0 {
+        CharacterState::Jumping
+    } else if move_left || move_right {
         CharacterState::Running
     } else {
         CharacterState::Idle
