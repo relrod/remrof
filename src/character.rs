@@ -171,40 +171,37 @@ pub fn move_character(
     let acceleration = 20.0;
 
     let query_res = query.get_single_mut();
-    match query_res {
-        Ok((mut velocity, mut state, mut sprite)) => {
-            let move_left = keyboard_input.pressed(KeyCode::ArrowLeft);
-            let move_right = keyboard_input.pressed(KeyCode::ArrowRight);
+    if let Ok((mut velocity, mut state, mut sprite)) = query_res {
+        let move_left = keyboard_input.pressed(KeyCode::ArrowLeft);
+        let move_right = keyboard_input.pressed(KeyCode::ArrowRight);
 
-            let target_speed = if move_left {
-                -running_speed
-            } else if move_right {
-                running_speed
-            } else {
-                0.0
-            };
+        let target_speed = if move_left {
+            -running_speed
+        } else if move_right {
+            running_speed
+        } else {
+            0.0
+        };
 
-            if velocity.x < target_speed {
-                velocity.x += acceleration;
-            } else if velocity.x > target_speed {
-                velocity.x -= acceleration;
-            }
-
-            if move_left {
-                sprite.flip_x = true;
-            } else if move_right {
-                sprite.flip_x = false;
-            }
-
-            *state = if velocity.y != 0.0 {
-                CharacterState::Jumping
-            } else if move_left || move_right {
-                CharacterState::Running
-            } else {
-                CharacterState::Idle
-            };
+        if velocity.x < target_speed {
+            velocity.x += acceleration;
+        } else if velocity.x > target_speed {
+            velocity.x -= acceleration;
         }
-        _ => return,
+
+        if move_left {
+            sprite.flip_x = true;
+        } else if move_right {
+            sprite.flip_x = false;
+        }
+
+        *state = if velocity.y != 0.0 {
+            CharacterState::Jumping
+        } else if move_left || move_right {
+            CharacterState::Running
+        } else {
+            CharacterState::Idle
+        };
     }
 }
 
@@ -217,13 +214,10 @@ pub fn jump(
     }
 
     let velocity = query.get_single_mut();
-    match velocity {
-        Ok(mut velocity) => {
-            if velocity.is_grounded {
-                velocity.y = 300.0;
-                velocity.is_grounded = false;
-            }
+    if let Ok(mut velocity) = velocity {
+        if velocity.is_grounded {
+            velocity.y = 300.0;
+            velocity.is_grounded = false;
         }
-        _ => return,
     }
 }
