@@ -42,6 +42,7 @@ fn main() {
             )
                 .chain(),
             restart::respawn_restartable_on_command,
+            restart::quit_on_command,
         ),
     )
     .insert_resource(respawnables)

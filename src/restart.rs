@@ -27,3 +27,12 @@ pub fn respawn_restartable_on_command(
         }
     }
 }
+
+pub fn quit_on_command(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut app_exit_events: ResMut<Events<AppExit>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::KeyQ) {
+        app_exit_events.send(AppExit::Success);
+    }
+}
