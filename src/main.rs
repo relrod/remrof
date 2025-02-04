@@ -22,7 +22,7 @@ fn main() {
         DefaultPlugins.set(ImagePlugin::default_nearest()),
         EmbeddedAssetPlugin,
     ))
-    .add_systems(Startup, (setup, level1::setup))
+    .add_systems(Startup, (setup, character::setup, level1::setup))
     .add_systems(
         Update,
         (
@@ -35,11 +35,13 @@ fn main() {
     .add_systems(
         FixedUpdate,
         (
-            physics::apply_velocity,
-            physics::apply_gravity,
-            physics::check_for_collisions,
+            (
+                physics::apply_velocity,
+                physics::apply_gravity,
+                physics::check_for_collisions,
+            ).chain(),
             restart::respawn_restartable_on_command,
-        ),
+        )
     )
     .insert_resource(respawnables)
     .run();
@@ -49,7 +51,6 @@ fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     query: Query<&Window, With<PrimaryWindow>>,
-    respawnables: Res<RestartableSystems>,
 ) {
     // Camera
     commands.spawn(Camera2d);
@@ -69,10 +70,6 @@ fn setup(
         },
         Transform::from_translation(Vec3::new(0.0, 0.0, -1.0)),
     ));
-
-    for respawnable in &respawnables.0 {
-        commands.run_system(*respawnable);
-    }
 }
 
 use crate::physics::{Collider, Grounded};
