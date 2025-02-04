@@ -71,7 +71,11 @@ pub fn setup(
         AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
         Character,
         CharacterState::Idle,
-        Velocity { x: 0.0, y: 0.0, is_grounded: false },
+        Velocity {
+            x: 0.0,
+            y: 0.0,
+            is_grounded: false,
+        },
         Grounded,
         Collider {
             size: Vec2::new(32.0 * 1.1, 32.0 * 1.5),
@@ -197,8 +201,8 @@ pub fn move_character(
             } else {
                 CharacterState::Idle
             };
-        },
-        _ => return
+        }
+        _ => return,
     }
 }
 
@@ -207,7 +211,7 @@ pub fn jump(
     mut query: Query<&mut Velocity, With<Character>>,
 ) {
     if !keyboard_input.just_pressed(KeyCode::Space) {
-        return
+        return;
     }
 
     let velocity = query.get_single_mut();
@@ -217,7 +221,7 @@ pub fn jump(
                 velocity.y = 300.0;
                 velocity.is_grounded = false;
             }
-        },
-        _ => return
+        }
+        _ => return,
     }
 }
