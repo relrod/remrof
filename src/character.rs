@@ -72,10 +72,7 @@ pub fn setup(
         AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
         Character,
         CharacterState::Idle,
-        Velocity {
-            x: 0.0,
-            y: 0.0,
-        },
+        Velocity { x: 0.0, y: 0.0 },
         Grounded,
         Collider {
             size: Vec2::new(32.0 * 1.1, 32.0 * 1.5),

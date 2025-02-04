@@ -39,9 +39,10 @@ fn main() {
                 physics::apply_velocity,
                 physics::apply_gravity,
                 physics::check_for_collisions,
-            ).chain(),
+            )
+                .chain(),
             restart::respawn_restartable_on_command,
-        )
+        ),
     )
     .insert_resource(respawnables)
     .run();
