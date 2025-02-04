@@ -75,7 +75,6 @@ pub fn setup(
         Velocity {
             x: 0.0,
             y: 0.0,
-            is_grounded: false,
         },
         Grounded,
         Collider {
@@ -215,9 +214,6 @@ pub fn jump(
 
     let velocity = query.get_single_mut();
     if let Ok(mut velocity) = velocity {
-        if velocity.is_grounded {
-            velocity.y = 300.0;
-            velocity.is_grounded = false;
-        }
+        velocity.y = 300.0;
     }
 }

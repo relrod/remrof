@@ -1,11 +1,10 @@
 use bevy::math::bounding::{Aabb2d, BoundingVolume, IntersectsVolume};
 use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Velocity {
     pub x: f32,
     pub y: f32,
-    pub is_grounded: bool,
 }
 
 /// A Grounded entity is affected by (i.e. falls onto) platforms/the ground.
@@ -89,7 +88,6 @@ pub fn check_for_collisions(
                             grounded_velocity.y = 0.0;
                             grounded_transform.translation.y =
                                 collider_box.max.y + grounded_half_size.y;
-                            grounded_velocity.is_grounded = true;
                         }
                     }
                     Collision::Bottom => {
@@ -140,8 +138,6 @@ pub fn apply_gravity(mut query: Query<&mut Velocity>, time: Res<Time>) {
     let gravity_factor = 1000.0;
 
     for mut velocity in &mut query {
-        if !velocity.is_grounded {
-            velocity.y -= gravity_factor * time.delta_secs();
-        }
+        velocity.y -= gravity_factor * time.delta_secs();
     }
 }
