@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::{
     animation::{AnimationIndices, AnimationTimer},
     physics::{Collider, Grounded, Velocity},
+    restart::RestartRespawn,
 };
 
 #[derive(Component)]
@@ -81,6 +82,7 @@ pub fn setup(
             size: Vec2::new(32.0 * 1.1, 32.0 * 1.5),
             offset: Vec2::new(0.0, -5.0),
         },
+        RestartRespawn,
     ));
 }
 
