@@ -5,6 +5,7 @@ use bevy::prelude::*;
 pub struct Velocity {
     pub x: f32,
     pub y: f32,
+    pub is_grounded: bool,
 }
 
 /// A Grounded entity is affected by (i.e. falls onto) platforms/the ground.
@@ -52,6 +53,7 @@ pub fn check_for_collisions(
     // A grounded thing can also be a collider (e.g. two players can collide
     // with each other).
     for (mut grounded_velocity, mut grounded_transform, grounded_collider) in &mut grounded {
+        let mut is_grounded = false;
         for (collider_transform, collider_collider) in &colliders {
             // We need center and half-sizes for both entities.
             let grounded_center =
@@ -89,6 +91,7 @@ pub fn check_for_collisions(
                             grounded_transform.translation.y =
                                 collider_box.max.y + grounded_half_size.y;
                         }
+                        is_grounded = true;
                     }
                     Collision::Bottom => {
                         if grounded_velocity.y > 0.0 {
@@ -100,6 +103,7 @@ pub fn check_for_collisions(
                 }
             }
         }
+        grounded_velocity.is_grounded = is_grounded;
     }
 }
 
@@ -138,6 +142,8 @@ pub fn apply_gravity(mut query: Query<&mut Velocity>, time: Res<Time>) {
     let gravity_factor = 2000.0;
 
     for mut velocity in &mut query {
-        velocity.y -= gravity_factor * time.delta_secs();
+        if !velocity.is_grounded {
+            velocity.y -= gravity_factor * time.delta_secs();
+        }
     }
 }
