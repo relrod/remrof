@@ -165,25 +165,26 @@ pub fn move_character(
 ) {
     let running_speed = 300.0;
     let acceleration = 20.0;
+    let deceleration = 40.0;
 
     let query_res = query.get_single_mut();
     if let Ok((mut velocity, mut state, mut sprite)) = query_res {
         let move_left = keyboard_input.pressed(KeyCode::ArrowLeft);
         let move_right = keyboard_input.pressed(KeyCode::ArrowRight);
 
-        let target_speed = if move_left {
-            -running_speed
-        } else if move_right {
-            running_speed
-        } else {
-            0.0
-        };
-
-        if velocity.x < target_speed {
-            velocity.x += acceleration;
-        } else if velocity.x > target_speed {
+        if move_left {
             velocity.x -= acceleration;
+        } else if move_right {
+            velocity.x += acceleration;
+        } else {
+            if velocity.x > 0.0 {
+                velocity.x = (velocity.x - deceleration).max(0.0);
+            } else if velocity.x < 0.0 {
+                velocity.x = (velocity.x + deceleration).min(0.0);
+            }
         }
+
+        velocity.x = velocity.x.clamp(-running_speed, running_speed);
 
         if move_left {
             sprite.flip_x = true;
@@ -211,6 +212,6 @@ pub fn jump(
 
     let velocity = query.get_single_mut();
     if let Ok(mut velocity) = velocity {
-        velocity.y = 300.0;
+        velocity.y = 500.0;
     }
 }
