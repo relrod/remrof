@@ -212,6 +212,9 @@ pub fn jump(
 
     let velocity = query.get_single_mut();
     if let Ok(mut velocity) = velocity {
-        velocity.y = 500.0;
+        // TODO: Give some small buffer if we're moving downward.
+        if velocity.y == 0.0 {
+            velocity.y = 500.0;
+        }
     }
 }
