@@ -110,9 +110,8 @@ pub fn animate_character(
                 indices.run,
             ),
             CharacterState::Jumping => {
-                // If we're jumping but our y velocity has gone back to 0, we're
-                // not jumping anymore, so reset to something else.
-                if velocity.y == 0.0 {
+                // If we're not jumping anymore, so reset to something else.
+                if velocity.is_grounded {
                     *state = CharacterState::Idle;
                     (
                         &animations.idle_texture,
@@ -195,7 +194,7 @@ pub fn move_character(
             sprite.flip_x = false;
         }
 
-        *state = if velocity.y != 0.0 {
+        *state = if !velocity.is_grounded {
             CharacterState::Jumping
         } else if move_left || move_right {
             CharacterState::Running

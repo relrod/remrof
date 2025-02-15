@@ -29,12 +29,7 @@ fn main() {
     ))
     .add_systems(
         Startup,
-        (
-            setup,
-            camera::setup,
-            character::setup,
-            level1::setup,
-        ),
+        (setup, camera::setup, character::setup, level1::setup),
     )
     .add_systems(
         Update,
