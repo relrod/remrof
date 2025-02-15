@@ -32,7 +32,6 @@ fn main() {
             setup,
             camera::setup,
             character::setup,
-            platform::setup,
             level1::setup,
         ),
     )
