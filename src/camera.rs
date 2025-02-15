@@ -9,6 +9,16 @@ pub fn setup(mut commands: Commands) {
     commands.spawn((Camera2d, CharacterCamera));
 }
 
+/// On restart, reset the camera right away rather than slowly
+/// lerping it back to the character.
+pub fn reset(mut camera_transform: Query<&mut Transform, With<CharacterCamera>>) {
+    let Ok(mut camera_transform) = camera_transform.get_single_mut() else {
+        return;
+    };
+
+    camera_transform.translation = Vec3::new(0.0, 0.0, 0.0);
+}
+
 /// Track the character with the camera.
 ///
 /// Make the tracking smooth by applying linear interpolation (lerp).

@@ -17,7 +17,10 @@ use crate::{embedded_assets::EmbeddedAssetPlugin, restart::RestartableSystems};
 fn main() {
     let mut app = App::new();
 
-    let respawnables = RestartableSystems(vec![app.register_system(character::setup)]);
+    let respawnables = RestartableSystems(vec![
+        app.register_system(character::setup),
+        app.register_system(camera::reset),
+    ]);
 
     app.add_plugins((
         DefaultPlugins.set(ImagePlugin::default_nearest()),
