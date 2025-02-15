@@ -2,6 +2,7 @@
 #![allow(clippy::needless_pass_by_value)]
 
 mod animation;
+mod camera;
 mod character;
 mod embedded_assets;
 mod level1;
@@ -22,13 +23,23 @@ fn main() {
         DefaultPlugins.set(ImagePlugin::default_nearest()),
         EmbeddedAssetPlugin,
     ))
-    .add_systems(Startup, (setup, character::setup, level1::setup))
+    .add_systems(
+        Startup,
+        (
+            setup,
+            camera::setup,
+            character::setup,
+            platform::setup,
+            level1::setup,
+        ),
+    )
     .add_systems(
         Update,
         (
             character::animate_character,
             character::move_character,
             character::jump,
+            camera::track_character,
             // draw_aabb_boxes,
         ),
     )
@@ -54,9 +65,6 @@ fn setup(
     asset_server: Res<AssetServer>,
     query: Query<&Window, With<PrimaryWindow>>,
 ) {
-    // Camera
-    commands.spawn(Camera2d);
-
     // Background
     let window = query.single();
     commands.spawn((
