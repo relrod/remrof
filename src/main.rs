@@ -1,5 +1,6 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::needless_pass_by_value)]
+#![allow(clippy::type_complexity)]
 
 mod animation;
 mod camera;

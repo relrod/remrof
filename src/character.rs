@@ -126,6 +126,7 @@ pub fn animate_character(
         };
 
         let texture_changed = sprite.image != *texture;
+        #[allow(clippy::match_same_arms)]
         let atlas_changed = match (&sprite.texture_atlas, layout) {
             (Some(atlas), Some(layout_handle)) => atlas.layout != *layout_handle,
             (Some(_), None) => true, // Had an atlas but now using a plain texture
@@ -180,12 +181,10 @@ pub fn move_character(
             velocity.x -= acceleration;
         } else if move_right {
             velocity.x += acceleration;
-        } else {
-            if velocity.x > 0.0 {
-                velocity.x = (velocity.x - deceleration).max(0.0);
-            } else if velocity.x < 0.0 {
-                velocity.x = (velocity.x + deceleration).min(0.0);
-            }
+        } else if velocity.x > 0.0 {
+            velocity.x = (velocity.x - deceleration).max(0.0);
+        } else if velocity.x < 0.0 {
+            velocity.x = (velocity.x + deceleration).min(0.0);
         }
 
         velocity.x = velocity.x.clamp(-running_speed, running_speed);
