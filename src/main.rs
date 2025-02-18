@@ -39,20 +39,18 @@ fn main() {
             character::jump,
             camera::track_character,
             // draw_aabb_boxes,
+            restart::respawn_restartable_on_command,
+            restart::quit_on_command,
         ),
     )
     .add_systems(
         FixedUpdate,
         (
-            (
-                physics::apply_velocity,
-                physics::apply_gravity,
-                physics::check_for_collisions,
-            )
-                .chain(),
-            restart::respawn_restartable_on_command,
-            restart::quit_on_command,
-        ),
+            physics::apply_velocity,
+            physics::apply_gravity,
+            physics::check_for_collisions,
+        )
+            .chain(),
     )
     .insert_resource(respawnables)
     .run();
