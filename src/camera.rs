@@ -1,12 +1,36 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 
 use crate::character::Character;
 
 #[derive(Component)]
 pub struct CharacterCamera;
 
-pub fn setup(mut commands: Commands) {
+#[derive(Component)]
+pub struct Background;
+
+pub fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    query: Query<&Window, With<PrimaryWindow>>,
+) {
     commands.spawn((Camera2d, CharacterCamera));
+
+    // Background
+    let window = query.single();
+    commands.spawn((
+        Sprite {
+            image: asset_server.load("embedded://remrof/../assets/bg/green.png"),
+            image_mode: SpriteImageMode::Tiled {
+                tile_x: true,
+                tile_y: true,
+                stretch_value: 1.0,
+            },
+            custom_size: Some(window.size()),
+            ..default()
+        },
+        Transform::from_translation(Vec3::new(0.0, 0.0, -1.0)),
+        Background,
+    ));
 }
 
 /// On restart, reset the camera right away rather than slowly
@@ -36,8 +60,25 @@ pub fn track_character(
     };
 
     let Vec3 { x, y, .. } = character_transform.translation;
-    let direction = Vec3::new(x, y, camera_transform.translation.z);
+    let direction = Vec3::new(x, camera_transform.translation.y, camera_transform.translation.z);
     camera_transform.translation = camera_transform
         .translation
         .lerp(direction, time.delta_secs() * 2.0);
+}
+
+/// Move the background to match the camera position, but keep it in world space.
+pub fn update_background(
+    camera: Query<&Transform, With<CharacterCamera>>,
+    mut bg: Query<&mut Transform, (With<Background>, Without<CharacterCamera>)>,
+) {
+    let Ok(camera_transform) = camera.get_single() else {
+        return;
+    };
+
+    let Ok(mut bg_transform) = bg.get_single_mut() else {
+        return;
+    };
+
+    bg_transform.translation.x = camera_transform.translation.x;
+    bg_transform.translation.y = camera_transform.translation.y;
 }

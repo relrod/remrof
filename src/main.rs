@@ -11,7 +11,7 @@ mod physics;
 mod platform;
 mod restart;
 
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 
 use crate::{embedded_assets::EmbeddedAssetPlugin, restart::RestartableSystems};
 
@@ -29,7 +29,7 @@ fn main() {
     ))
     .add_systems(
         Startup,
-        (setup, camera::setup, character::setup, level1::setup),
+        (camera::setup, character::setup, level1::setup),
     )
     .add_systems(
         Update,
@@ -38,6 +38,7 @@ fn main() {
             character::move_character,
             character::jump,
             camera::track_character,
+            camera::update_background,
             // draw_aabb_boxes,
             restart::respawn_restartable_on_command,
             restart::quit_on_command,
@@ -54,28 +55,6 @@ fn main() {
     )
     .insert_resource(respawnables)
     .run();
-}
-
-fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    query: Query<&Window, With<PrimaryWindow>>,
-) {
-    // Background
-    let window = query.single();
-    commands.spawn((
-        Sprite {
-            image: asset_server.load("embedded://remrof/../assets/bg/green.png"),
-            image_mode: SpriteImageMode::Tiled {
-                tile_x: true,
-                tile_y: true,
-                stretch_value: 1.0,
-            },
-            custom_size: Some(window.size()),
-            ..default()
-        },
-        Transform::from_translation(Vec3::new(0.0, 0.0, -1.0)),
-    ));
 }
 
 use crate::physics::{Collider, Grounded};

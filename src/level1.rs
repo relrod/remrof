@@ -87,4 +87,72 @@ pub fn setup(mut commands: Commands) {
             ..default()
         },
     ));
+
+    commands.spawn((
+        Sprite {
+            color: Color::srgb(0.8, 0.6, 0.3),
+            ..default()
+        },
+        Transform {
+            translation: Vec3::new(475.0, -15.0, 0.0),
+            scale: Vec3::new(10.0, 30.0, 1.0),
+            ..default()
+        },
+        Platform,
+        Collider {
+            size: Vec2::new(10.0, 30.0),
+            ..default()
+        },
+    ));
+
+    commands.spawn((
+        Sprite {
+            color: Color::srgb(0.8, 0.6, 0.3),
+            ..default()
+        },
+        Transform {
+            translation: Vec3::new(520.0, 0.0, 0.0),
+            scale: Vec3::new(10.0, 30.0, 1.0),
+            ..default()
+        },
+        Platform,
+        Collider {
+            size: Vec2::new(10.0, 30.0),
+            ..default()
+        },
+    ));
+
+    commands.spawn((
+        Sprite {
+            color: Color::srgb(0.8, 0.6, 0.3),
+            ..default()
+        },
+        Transform {
+            translation: Vec3::new(600.0, 10.0, 0.0),
+            scale: Vec3::new(10.0, 30.0, 1.0),
+            ..default()
+        },
+        Platform,
+        Collider {
+            size: Vec2::new(10.0, 30.0),
+            ..default()
+        },
+    ));
+
+    commands.spawn((
+        Sprite {
+            color: Color::srgb(0.8, 0.6, 0.3),
+            ..default()
+        },
+        Transform {
+            translation: Vec3::new(670.0, -15.0, 0.0),
+            scale: Vec3::new(10.0, 30.0, 1.0),
+            ..default()
+        },
+        Platform,
+        Collider {
+            size: Vec2::new(10.0, 30.0),
+            ..default()
+        },
+    ));
 }
